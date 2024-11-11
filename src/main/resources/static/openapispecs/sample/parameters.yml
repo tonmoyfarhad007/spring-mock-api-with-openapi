@@ -1,0 +1,20 @@
+components:
+  parameters:
+    PageParameter:
+        name: page
+        in: query
+        required: true
+        description: Page Number
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+    SizeParameter:
+        name: size
+        in: query
+        required: true
+        description: The Number of Sample to Return
+        schema:
+          type: integer
+          default: 10
+          minimum: 10

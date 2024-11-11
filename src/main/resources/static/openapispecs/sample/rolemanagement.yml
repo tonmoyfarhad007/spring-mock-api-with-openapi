@@ -1,0 +1,339 @@
+openapi: 3.0.3
+info:
+  title: Group Service API
+  version: 1.0.0
+paths:
+  /organization/groups:
+      get:
+        parameters:
+        - $ref: 'parameters.yml#/components/parameters/PageParameter'
+        - $ref: 'parameters.yml#/components/parameters/SizeParameter'
+        tags:
+          - Group
+        summary: Get all groups
+        operationId: getGroups
+        
+        responses:
+          200:
+            description: get Groups.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/GroupResponse'
+            
+          400:
+            description: Malformed  of the request params.
+            content:
+              application/problem+json:
+                schema:
+                  $ref: '#/components/schemas/ErrorDetails'
+          401:
+            description: unauthorized request
+          501:
+            description: internal server error
+
+      post:
+        tags:
+          - Group
+        summary: create a group
+        operationId: createGroup
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupCreate'
+        responses:
+          201:
+            description: Group created.
+          400:
+            description: Malformed syntax of the request params.
+            content:
+              application/problem+json:
+                schema:
+                  $ref: '#/components/schemas/ErrorDetails'
+          401:
+            description: unauthorized request
+          501:
+            description: internal server error
+
+  /organization/groups/{id}:
+    delete:
+      tags:
+        - Group
+      summary: Delete group
+      operationId: deleteGroup
+      parameters:
+        - name: id
+          in: path
+          allowEmptyValue: false
+          description: Group Id.
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+            example: 'e06bf865-312c-4e2a-85c3-cc20db4a4c1d'
+      
+      responses:
+        204:
+          description: no content
+          
+        400:
+          description: Malformed  of the request params.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetails'
+        401:
+          description: unauthorized request
+        501:
+          description: internal server error
+    
+    get:
+      tags:
+        - Group
+      summary: Get all group related permissions
+      operationId: GroupsPermission
+      parameters:
+        - name: id
+          in: path
+          allowEmptyValue: false
+          description: Group Id.
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+            example: 'e06bf865-312c-4e2a-85c3-cc20db4a4c1d'
+      responses:
+        201:
+        # need to add group info
+          description: group permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/compositePermissions'
+        400:
+          description: Malformed syntax of the request params.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetails'
+        401:
+          description: unauthorized request
+        501:
+          description: internal server error,
+
+    post:
+      tags:
+        - Group
+      summary: Assign composite-permission(s)/permission(s)
+      operationId: assignPermission
+      parameters:
+        - name: id
+          in: path
+          allowEmptyValue: false
+          description: Group Id.
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+            example: 'e06bf865-312c-4e2a-85c3-cc20db4a4c1d'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/compositePermissions'
+      responses:
+        201:
+          description: assigned permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/compositePermissions'
+        400:
+          description: Malformed syntax of the request params.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetails'  
+        401:
+          description: unauthorized request
+        501:
+          description: internal server error
+    # delete:
+    #   tags:
+    #     - Group
+    #   summary: Delete a composite-permission(s)/permission(s)
+    #   operationId: deletePermission
+    #   parameters:
+    #     - in: path
+    #       name: groupId
+    #       allowEmptyValue: false
+    #       description: Group Id.
+    #       required: true
+    #       schema:
+    #         type: string
+    #         pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+    #         example: 'e06bf865-312c-4e2a-85c3-cc20db4a4c1d'
+    #   requestBody:
+    #     required: true
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: '#/components/schemas/compositePermissions'
+    #   responses:
+    #     201:
+    #     # need to talk with front end guys
+    #       description: Group created.
+    #     400:
+    #       description: Malformed syntax of the request params.
+    #       content:
+    #         application/problem+json:
+    #           schema:
+    #             $ref: '#/components/schemas/ErrorDetails'
+    #     401:
+    #       description: unauthorized request
+    #     501:
+    #       description: internal server error
+
+
+
+
+components:
+  schemas:
+    GroupCreateRequest:
+      description: Create group from its user.
+      type: object
+      properties:
+        name:
+          description: Name from user.
+          type: string
+          maxLength: 100
+          example: name_of_the_group
+    GroupCreate:
+      description: Group creation payload
+      type: object
+      properties:
+        name:
+          description: list of the group
+          type: string
+          maxLength: 15
+          example: My group
+        compositePermissions:
+          description: List of composite permission
+          type: array
+          example:
+          $ref: '#/components/schemas/Permissions'
+
+    GroupResponse:
+      description: Group object
+      type: object
+      properties:
+        total:
+          description: total group
+          type: integer
+          example: 100
+        page:
+          description: current page
+          type: integer
+          example: 10
+        
+        groups:
+          description: List of groups
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        
+    Groups:
+      description: List of groups.
+      type: array
+      items:
+        $ref: '#/components/schemas/Group'
+
+    Group:
+      description: Details of a single group.
+      type: object
+      properties:
+        id:
+          description: Group Id.
+          type: string
+          example: 'fb548f2b-1707-4b13-a987-f42426f5b927'
+        name:
+          description: Name of the groups.
+          type: string
+          example: 'Test-group'
+        compositePermissions: 
+          description: Lis of organization Composite permission.
+          type: array
+          items: 
+            $ref: '#/components/schemas/Permission' 
+    
+    compositePermissions:
+      description: Permissions object
+      type: object
+      properties:
+        id:
+          description: Group Id.
+          type: string
+          example: 'fb548f2b-1707-4b13-a987-f42426f5b927'
+        name:
+          description: name of the group
+          type: string
+          example: my group
+        compositePermissions:
+          description: list of the permission
+          type: string
+          maxLength: 15
+          example: groups
+          $ref: '#/components/schemas/Permissions'
+
+    Permissions:
+      description: list of permission
+      type: array
+      items:
+        $ref: '#/components/schemas/Permission'
+
+    Permission: 
+      description: Composite permission.
+      type: object
+      properties:
+        id:
+          description: Id.
+          type: string
+          example: 'fb548f2b-1707-4b13-a987-f42426f5b927'
+        name:
+          description: Name.
+          type: string
+          example: 'permission_name'
+        # description:
+        #   description: Role name.
+        #   type: string
+        #   example: 'description of the permission'
+    
+    ErrorDetails:
+      type: object
+      properties:
+        code:
+          description: Application error code.
+          type: integer
+          nullable: false
+          example: 400
+        detail:
+          description: A short, summary of the problem type.
+          type: string
+          nullable: false
+          example: 'size must be between 10 and 12.'
+        field:
+          description: The field that caused the error.
+          type: string
+          example: 'consumer.phone'
+        value:
+          description: The value of the field that caused the error.
+          type: object
+          example: null
+        location:
+          description: The location of the field that caused the error.
+          type: string
+          enum: [ 'BODY','PATH','QUERY','HEADER' ]
+          example: 'BODY'               
